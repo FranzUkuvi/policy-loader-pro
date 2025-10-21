@@ -192,7 +192,7 @@ const Index = () => {
         const badgeContent = (
           <Badge
             variant={status === "valid" ? "success" : status === "warning" ? "warning" : "error"}
-            className="gap-1"
+            className="gap-1 cursor-default"
           >
             {status === "valid" ? (
               <CheckCircle2 className="w-3 h-3" />
@@ -205,16 +205,14 @@ const Index = () => {
 
         if (status !== "valid" && message) {
           return (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  {badgeContent}
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{message}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {badgeContent}
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p className="text-sm">{message}</p>
+              </TooltipContent>
+            </Tooltip>
           );
         }
 
@@ -364,8 +362,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <TooltipProvider>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-primary/10">
@@ -485,8 +484,9 @@ const Index = () => {
             )}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
