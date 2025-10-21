@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Download, Upload, FileSpreadsheet, AlertCircle, CheckCircle2, Edit } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ColumnDef } from "@tanstack/react-table";
 import * as XLSX from "xlsx";
 import { EditRecordDialog, PolicyRecord } from "@/components/EditRecordDialog";
@@ -186,7 +187,9 @@ const Index = () => {
       header: "Estado",
       cell: ({ row }) => {
         const status = row.original.validationStatus;
-        return (
+        const message = row.original.validationMessage;
+        
+        const badgeContent = (
           <Badge
             variant={status === "valid" ? "success" : status === "warning" ? "warning" : "error"}
             className="gap-1"
@@ -199,6 +202,23 @@ const Index = () => {
             {status === "valid" ? "Válido" : status === "warning" ? "Advertencia" : "Error"}
           </Badge>
         );
+
+        if (status !== "valid" && message) {
+          return (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {badgeContent}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{message}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        }
+
+        return badgeContent;
       },
     },
     {
