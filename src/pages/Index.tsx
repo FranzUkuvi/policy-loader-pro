@@ -7,20 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Download, Upload, FileSpreadsheet, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Download, Upload, FileSpreadsheet, AlertCircle, CheckCircle2, Edit } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import * as XLSX from "xlsx";
-
-interface PolicyRecord {
-  id: number;
-  poliza: string;
-  cliente: string;
-  fecha: string;
-  monto: string;
-  estado: string;
-  validationStatus: "valid" | "warning" | "error";
-  validationMessage?: string;
-}
+import { EditRecordDialog, PolicyRecord } from "@/components/EditRecordDialog";
 
 const steps = [
   { id: 1, title: "Cargar archivo", description: "Excel con datos" },
@@ -33,6 +23,8 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [records, setRecords] = useState<PolicyRecord[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<PolicyRecord | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleFileSelect = async (file: File) => {
     setIsProcessing(true);
@@ -50,35 +42,104 @@ const Index = () => {
       // Función helper para obtener valor de columna (case-insensitive)
       const getColumnValue = (row: any, columnNames: string[]): string => {
         for (const name of columnNames) {
-          if (row[name] !== undefined && row[name] !== null) {
-            return String(row[name]);
+          const keys = Object.keys(row);
+          const matchedKey = keys.find(
+            (key) => key.toLowerCase().trim() === name.toLowerCase().trim()
+          );
+          if (matchedKey && row[matchedKey] !== undefined && row[matchedKey] !== null) {
+            return String(row[matchedKey]).trim();
           }
         }
         return "";
       };
 
-      // Simular validación de datos
+      // Procesar datos con las 29 columnas
       const processedRecords: PolicyRecord[] = jsonData.map((row: any, index) => {
-        const validationStatus: "valid" | "warning" | "error" = Math.random() > 0.7 ? "error" : Math.random() > 0.5 ? "warning" : "valid";
+        // Datos personales
+        const nombre = getColumnValue(row, ["Nombre"]);
+        const apellidoPaterno = getColumnValue(row, ["Apellido Paterno"]);
+        const apellidoMaterno = getColumnValue(row, ["Apellido Materno"]);
+        const rfc = getColumnValue(row, ["RFC"]);
+        const genero = getColumnValue(row, ["Genero", "Género"]);
+        const correo = getColumnValue(row, ["Correo", "Email"]);
+        const telefono = getColumnValue(row, ["Telefono", "Teléfono"]);
         
-        const record = {
+        // Datos de la póliza
+        const ramo = getColumnValue(row, ["Ramo"]);
+        const subRamo = getColumnValue(row, ["Sub-Ramo", "SubRamo"]);
+        const producto = getColumnValue(row, ["Producto"]);
+        const aseguradora = getColumnValue(row, ["Aseguradora"]);
+        const plan = getColumnValue(row, ["Plan"]);
+        const numeroPoliza = getColumnValue(row, ["N° de Póliza", "Número de Póliza", "No de Poliza"]);
+        
+        // Fechas
+        const inicioVigencia = getColumnValue(row, ["Inicio Vigencia"]);
+        const finVigencia = getColumnValue(row, ["Fin Vigencia"]);
+        const fechaEmision = getColumnValue(row, ["Fecha Emisión", "Fecha Emision"]);
+        const fechaUltimoPago = getColumnValue(row, ["Fecha Último Pago", "Fecha Ultimo Pago"]);
+        
+        // Datos financieros
+        const primaNeta = getColumnValue(row, ["Prima Neta Anual"]);
+        const recargo = getColumnValue(row, ["Recargo"]);
+        const derechoPoliza = getColumnValue(row, ["Derecho de Póliza", "Derecho de Poliza"]);
+        const iva = getColumnValue(row, ["IVA"]);
+        const porcentajeIva = getColumnValue(row, ["% IVA"]);
+        const montoPrimaAnual = getColumnValue(row, ["Monto Prima Anual"]);
+        
+        // Otros
+        const temporalidad = getColumnValue(row, ["Temporalidad"]);
+        const diaCompromisoPago = getColumnValue(row, ["Día Compromiso de Pago", "Dia Compromiso de Pago"]);
+        const moneda = getColumnValue(row, ["Moneda"]);
+        const formaPago = getColumnValue(row, ["Forma de Pago"]);
+        const metodoPago = getColumnValue(row, ["Método de Pago", "Metodo de Pago"]);
+        const formaPagoDerechoPoliza = getColumnValue(row, ["Forma de Pago Derecho de Póliza", "Forma de Pago Derecho de Poliza"]);
+        
+        // Validaciones básicas
+        let validationStatus: "valid" | "warning" | "error" = "valid";
+        let validationMessage = "";
+        
+        if (!nombre || !numeroPoliza || !rfc) {
+          validationStatus = "error";
+          validationMessage = "Faltan campos obligatorios (Nombre, RFC o N° Póliza)";
+        } else if (!correo || !aseguradora) {
+          validationStatus = "warning";
+          validationMessage = "Faltan campos recomendados";
+        }
+        
+        return {
           id: index + 1,
-          poliza: getColumnValue(row, ["Poliza", "poliza", "Póliza", "póliza", "POLIZA"]),
-          cliente: getColumnValue(row, ["Cliente", "cliente", "CLIENTE"]),
-          fecha: getColumnValue(row, ["Fecha", "fecha", "FECHA"]),
-          monto: getColumnValue(row, ["Monto", "monto", "MONTO"]),
-          estado: getColumnValue(row, ["Estado", "estado", "ESTADO"]),
+          nombre,
+          apellidoPaterno,
+          apellidoMaterno,
+          rfc,
+          genero,
+          correo,
+          telefono,
+          ramo,
+          subRamo,
+          producto,
+          aseguradora,
+          plan,
+          numeroPoliza,
+          inicioVigencia,
+          finVigencia,
+          fechaEmision,
+          fechaUltimoPago,
+          primaNeta,
+          recargo,
+          derechoPoliza,
+          iva,
+          porcentajeIva,
+          montoPrimaAnual,
+          temporalidad,
+          diaCompromisoPago,
+          moneda,
+          formaPago,
+          metodoPago,
+          formaPagoDerechoPoliza,
           validationStatus,
-          validationMessage:
-            validationStatus === "error"
-              ? "Formato de póliza inválido"
-              : validationStatus === "warning"
-              ? "Verificar datos del cliente"
-              : undefined,
+          validationMessage,
         };
-        
-        console.log("Registro procesado:", record);
-        return record;
       });
 
       setRecords(processedRecords);
@@ -106,6 +167,19 @@ const Index = () => {
     return { total: records.length, valid, warnings, errors };
   }, [records]);
 
+  const handleEditRecord = (record: PolicyRecord) => {
+    setEditingRecord(record);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveRecord = (updatedRecord: PolicyRecord) => {
+    setRecords(records.map(r => r.id === updatedRecord.id ? updatedRecord : r));
+    toast({
+      title: "Registro actualizado",
+      description: "Los cambios se han guardado exitosamente",
+    });
+  };
+
   const columns: ColumnDef<PolicyRecord>[] = [
     {
       accessorKey: "validationStatus",
@@ -128,25 +202,50 @@ const Index = () => {
       },
     },
     {
-      accessorKey: "poliza",
-      header: "Póliza",
+      id: "acciones",
+      header: "Acciones",
+      cell: ({ row }) => (
+        <Button variant="outline" size="sm" onClick={() => handleEditRecord(row.original)}>
+          <Edit className="w-4 h-4 mr-1" />
+          Editar
+        </Button>
+      ),
     },
-    {
-      accessorKey: "cliente",
-      header: "Cliente",
-    },
-    {
-      accessorKey: "fecha",
-      header: "Fecha",
-    },
-    {
-      accessorKey: "monto",
-      header: "Monto",
-    },
-    {
-      accessorKey: "estado",
-      header: "Estado",
-    },
+    // Datos Personales
+    { accessorKey: "nombre", header: "Nombre" },
+    { accessorKey: "apellidoPaterno", header: "Apellido Paterno" },
+    { accessorKey: "apellidoMaterno", header: "Apellido Materno" },
+    { accessorKey: "rfc", header: "RFC" },
+    { accessorKey: "genero", header: "Género" },
+    { accessorKey: "correo", header: "Correo" },
+    { accessorKey: "telefono", header: "Teléfono" },
+    // Datos de la Póliza
+    { accessorKey: "numeroPoliza", header: "N° de Póliza" },
+    { accessorKey: "aseguradora", header: "Aseguradora" },
+    { accessorKey: "ramo", header: "Ramo" },
+    { accessorKey: "subRamo", header: "Sub-Ramo" },
+    { accessorKey: "producto", header: "Producto" },
+    { accessorKey: "plan", header: "Plan" },
+    // Fechas
+    { accessorKey: "inicioVigencia", header: "Inicio Vigencia" },
+    { accessorKey: "finVigencia", header: "Fin Vigencia" },
+    { accessorKey: "fechaEmision", header: "Fecha Emisión" },
+    { accessorKey: "fechaUltimoPago", header: "Fecha Último Pago" },
+    // Datos Financieros
+    { accessorKey: "primaNeta", header: "Prima Neta Anual" },
+    { accessorKey: "recargo", header: "Recargo" },
+    { accessorKey: "derechoPoliza", header: "Derecho de Póliza" },
+    { accessorKey: "iva", header: "IVA" },
+    { accessorKey: "porcentajeIva", header: "% IVA" },
+    { accessorKey: "montoPrimaAnual", header: "Monto Prima Anual" },
+    // Otros
+    { accessorKey: "temporalidad", header: "Temporalidad" },
+    { accessorKey: "diaCompromisoPago", header: "Día Compromiso de Pago" },
+    { accessorKey: "moneda", header: "Moneda" },
+    { accessorKey: "formaPago", header: "Forma de Pago" },
+    { accessorKey: "metodoPago", header: "Método de Pago" },
+    { accessorKey: "formaPagoDerechoPoliza", header: "Forma de Pago Derecho Póliza" },
+    // Mensaje de validación
     {
       accessorKey: "validationMessage",
       header: "Mensaje",
@@ -164,21 +263,84 @@ const Index = () => {
     
     if (validRecords.length > 0) {
       const validWs = XLSX.utils.json_to_sheet(
-        validRecords.map(({ id, validationStatus, validationMessage, ...rest }) => rest)
+        validRecords.map(({ id, validationStatus, validationMessage, ...rest }) => ({
+          "Nombre": rest.nombre,
+          "Apellido Paterno": rest.apellidoPaterno,
+          "Apellido Materno": rest.apellidoMaterno,
+          "RFC": rest.rfc,
+          "Género": rest.genero,
+          "Correo": rest.correo,
+          "Teléfono": rest.telefono,
+          "Ramo": rest.ramo,
+          "Sub-Ramo": rest.subRamo,
+          "Producto": rest.producto,
+          "Aseguradora": rest.aseguradora,
+          "Plan": rest.plan,
+          "N° de Póliza": rest.numeroPoliza,
+          "Inicio Vigencia": rest.inicioVigencia,
+          "Fin Vigencia": rest.finVigencia,
+          "Fecha Emisión": rest.fechaEmision,
+          "Fecha Último Pago": rest.fechaUltimoPago,
+          "Prima Neta Anual": rest.primaNeta,
+          "Recargo": rest.recargo,
+          "Derecho de Póliza": rest.derechoPoliza,
+          "IVA": rest.iva,
+          "% IVA": rest.porcentajeIva,
+          "Monto Prima Anual": rest.montoPrimaAnual,
+          "Temporalidad": rest.temporalidad,
+          "Día Compromiso de Pago": rest.diaCompromisoPago,
+          "Moneda": rest.moneda,
+          "Forma de Pago": rest.formaPago,
+          "Método de Pago": rest.metodoPago,
+          "Forma de Pago Derecho de Póliza": rest.formaPagoDerechoPoliza,
+        }))
       );
       XLSX.utils.book_append_sheet(wb, validWs, "Registros Válidos");
     }
-
+    
     if (invalidRecords.length > 0) {
-      const invalidWs = XLSX.utils.json_to_sheet(invalidRecords);
+      const invalidWs = XLSX.utils.json_to_sheet(
+        invalidRecords.map(({ id, validationStatus, ...rest }) => ({
+          "Nombre": rest.nombre,
+          "Apellido Paterno": rest.apellidoPaterno,
+          "Apellido Materno": rest.apellidoMaterno,
+          "RFC": rest.rfc,
+          "Género": rest.genero,
+          "Correo": rest.correo,
+          "Teléfono": rest.telefono,
+          "Ramo": rest.ramo,
+          "Sub-Ramo": rest.subRamo,
+          "Producto": rest.producto,
+          "Aseguradora": rest.aseguradora,
+          "Plan": rest.plan,
+          "N° de Póliza": rest.numeroPoliza,
+          "Inicio Vigencia": rest.inicioVigencia,
+          "Fin Vigencia": rest.finVigencia,
+          "Fecha Emisión": rest.fechaEmision,
+          "Fecha Último Pago": rest.fechaUltimoPago,
+          "Prima Neta Anual": rest.primaNeta,
+          "Recargo": rest.recargo,
+          "Derecho de Póliza": rest.derechoPoliza,
+          "IVA": rest.iva,
+          "% IVA": rest.porcentajeIva,
+          "Monto Prima Anual": rest.montoPrimaAnual,
+          "Temporalidad": rest.temporalidad,
+          "Día Compromiso de Pago": rest.diaCompromisoPago,
+          "Moneda": rest.moneda,
+          "Forma de Pago": rest.formaPago,
+          "Método de Pago": rest.metodoPago,
+          "Forma de Pago Derecho de Póliza": rest.formaPagoDerechoPoliza,
+          "Error": rest.validationMessage,
+        }))
+      );
       XLSX.utils.book_append_sheet(wb, invalidWs, "Registros con Errores");
     }
 
-    XLSX.writeFile(wb, "validacion_polizas.xlsx");
+    XLSX.writeFile(wb, `polizas_procesadas_${new Date().toISOString().split('T')[0]}.xlsx`);
     
     toast({
-      title: "Descarga completada",
-      description: "Los resultados se han exportado exitosamente",
+      title: "Archivo descargado",
+      description: `Se descargaron ${validRecords.length} registros válidos y ${invalidRecords.length} con errores`,
     });
   };
 
@@ -278,6 +440,13 @@ const Index = () => {
 
               <DataTable columns={columns} data={records} />
             </Card>
+
+            <EditRecordDialog
+              record={editingRecord}
+              open={isEditDialogOpen}
+              onOpenChange={setIsEditDialogOpen}
+              onSave={handleSaveRecord}
+            />
 
             {validationStats.valid > 0 && (
               <Card className="p-6 bg-success-light border-success/20">
