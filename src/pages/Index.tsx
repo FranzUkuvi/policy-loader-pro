@@ -188,7 +188,7 @@ const Index = () => {
         const status = row.original.validationStatus;
         return (
           <Badge
-            variant={status === "valid" ? "default" : status === "warning" ? "secondary" : "destructive"}
+            variant={status === "valid" ? "success" : status === "warning" ? "warning" : "error"}
             className="gap-1"
           >
             {status === "valid" ? (
