@@ -44,16 +44,30 @@ const Index = () => {
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+      console.log("Datos cargados del archivo:", jsonData);
+      console.log("Primera fila:", jsonData[0]);
+
+      // Función helper para obtener valor de columna (case-insensitive)
+      const getColumnValue = (row: any, columnNames: string[]): string => {
+        for (const name of columnNames) {
+          if (row[name] !== undefined && row[name] !== null) {
+            return String(row[name]);
+          }
+        }
+        return "";
+      };
+
       // Simular validación de datos
       const processedRecords: PolicyRecord[] = jsonData.map((row: any, index) => {
-        const validationStatus = Math.random() > 0.7 ? "error" : Math.random() > 0.5 ? "warning" : "valid";
-        return {
+        const validationStatus: "valid" | "warning" | "error" = Math.random() > 0.7 ? "error" : Math.random() > 0.5 ? "warning" : "valid";
+        
+        const record = {
           id: index + 1,
-          poliza: row.Poliza || row.poliza || "",
-          cliente: row.Cliente || row.cliente || "",
-          fecha: row.Fecha || row.fecha || "",
-          monto: row.Monto || row.monto || "",
-          estado: row.Estado || row.estado || "",
+          poliza: getColumnValue(row, ["Poliza", "poliza", "Póliza", "póliza", "POLIZA"]),
+          cliente: getColumnValue(row, ["Cliente", "cliente", "CLIENTE"]),
+          fecha: getColumnValue(row, ["Fecha", "fecha", "FECHA"]),
+          monto: getColumnValue(row, ["Monto", "monto", "MONTO"]),
+          estado: getColumnValue(row, ["Estado", "estado", "ESTADO"]),
           validationStatus,
           validationMessage:
             validationStatus === "error"
@@ -62,6 +76,9 @@ const Index = () => {
               ? "Verificar datos del cliente"
               : undefined,
         };
+        
+        console.log("Registro procesado:", record);
+        return record;
       });
 
       setRecords(processedRecords);
