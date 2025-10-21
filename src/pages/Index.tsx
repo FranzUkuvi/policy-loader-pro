@@ -191,7 +191,7 @@ const Index = () => {
               <FileSpreadsheet className="w-6 h-6 text-primary" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">
-              Validador de Pólizas CRM
+              Carga de Pólizas a CRM
             </h1>
           </div>
           <p className="text-muted-foreground">
