@@ -205,7 +205,7 @@ const Index = () => {
       id: "acciones",
       header: "Acciones",
       cell: ({ row }) => (
-        <Button variant="outline" size="icon" onClick={() => handleEditRecord(row.original)}>
+        <Button variant="ghost" size="icon" onClick={() => handleEditRecord(row.original)}>
           <Edit className="w-4 h-4" />
         </Button>
       ),
