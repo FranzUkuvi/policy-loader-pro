@@ -249,7 +249,7 @@ const Index = () => {
       accessorKey: "validationMessage",
       header: "Mensaje",
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">{row.original.validationMessage || "-"}</span>
+        <span className="text-xs text-muted-foreground">{row.original.validationMessage || "-"}</span>
       ),
     },
   ];
