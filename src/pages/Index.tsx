@@ -206,27 +206,42 @@ const Index = () => {
         {currentStep === 1 && (
           <Card className="p-8 shadow-elegant">
             <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <h2 className="text-2xl font-semibold text-foreground">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-foreground">
                   Comienza cargando tu archivo Excel
                 </h2>
-                <p className="text-muted-foreground">
-                  El sistema validará automáticamente los datos contra el layout definido
-                </p>
+                <Button variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Descargar Layout
+                </Button>
               </div>
               
               <FileUploader onFileSelect={handleFileSelect} />
 
-              <div className="pt-4 border-t">
-                <h3 className="font-medium text-foreground mb-3">Formato esperado del archivo:</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {["Poliza", "Cliente", "Fecha", "Monto", "Estado"].map((col) => (
-                    <div key={col} className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                      <span className="text-muted-foreground">{col}</span>
-                    </div>
-                  ))}
-                </div>
+              <div className="pt-4 border-t space-y-3">
+                <h3 className="font-semibold text-foreground">Instrucciones</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Asegúrate de que tu archivo Excel contenga todas las columnas requeridas según el layout definido</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>El sistema validará automáticamente formatos, campos obligatorios y catálogos</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Los datos se limpiarán automáticamente cuando sea posible (caracteres especiales, formatos)</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Podrás editar los registros con errores directamente en la tabla</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-primary mt-0.5">•</span>
+                    <span>Al finalizar, descarga los reportes de registros válidos e inválidos</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </Card>
