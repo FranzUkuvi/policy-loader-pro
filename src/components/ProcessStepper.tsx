@@ -39,7 +39,7 @@ export const ProcessStepper = ({ steps, currentStep }: ProcessStepperProps) => {
               <div className="mt-2 text-center">
                 <p
                   className={cn(
-                    "text-sm font-medium",
+                    "text-sm font-bold",
                     currentStep >= step.id ? "text-foreground" : "text-muted-foreground"
                   )}
                 >
