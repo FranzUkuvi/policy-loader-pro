@@ -206,8 +206,10 @@ const Index = () => {
         if (status !== "valid" && message) {
           return (
             <Tooltip>
-              <TooltipTrigger asChild>
-                {badgeContent}
+              <TooltipTrigger>
+                <span>
+                  {badgeContent}
+                </span>
               </TooltipTrigger>
               <TooltipContent side="right" className="max-w-xs">
                 <p className="text-sm">{message}</p>
